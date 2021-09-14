@@ -29,9 +29,9 @@ export class TasksService {
         return task;
     }
 
-    // deleteTask(id:string): Task {
-        
-    //     // this.tasks = this.tasks.filter(task => task.id !== id);
-    //     // return 
-    // }
+    deleteTask(id:string): Task {
+        const task: Task = this.tasks.find(task => task.id === id);
+        this.tasks = this.tasks.filter(task => task.id !== id);
+        return task;
+    }
 }
