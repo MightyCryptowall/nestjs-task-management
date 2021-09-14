@@ -42,6 +42,17 @@ export class TasksService {
         return this.tasks.find(task => task.id === id);
     }
 
+    updateTaskStatus(id: string, status: TaskStatus){
+        this.tasks = this.tasks.map(task => {
+            if(task.id === id){
+                return {...task, status}
+            }
+            return task
+        });
+    
+        return this.tasks.find(task => task.id === id);
+    }
+
     deleteTask(id:string): Task {
         const task: Task = this.tasks.find(task => task.id === id);
         this.tasks = this.tasks.filter(task => task.id !== id);
