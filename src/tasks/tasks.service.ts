@@ -1,3 +1,4 @@
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
@@ -27,6 +28,18 @@ export class TasksService {
 
         this.tasks.push(task);
         return task;
+    }
+
+    updaeTask(id:string, updateTaskDto:UpdateTaskDto):Task{
+        this.tasks = this.tasks.map(task => {
+            if(task.id === id){
+                return {id, ...updateTaskDto};
+            }
+
+            return task
+        });
+
+        return this.tasks.find(task => task.id === id);
     }
 
     deleteTask(id:string): Task {
