@@ -2,57 +2,54 @@ import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskStatus } from './task-status.enum';
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Repository } from 'typeorm';
 import { Task } from './task.entity';
-
+import { User } from 'src/auth/user.entity';
 
 @EntityRepository(Task)
-export class TasksRepository extends Repository<Task>{
-    
-    async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]>{
-        
-        const { status, search } = filterDto;
-        
-        const query = this.createQueryBuilder('task');
+export class TasksRepository extends Repository<Task> {
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+    const { status, search } = filterDto;
 
-        if (status) {
-            query.andWhere('task.status = :status', {status});  
-        }
+    const query = this.createQueryBuilder('task');
 
-        if (search) {
-            query.andWhere(
-                'LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)',
-                { search: `%${search}%` }
-            )
-        }
-        
+    query.where({ user });
 
-        const tasks = await query.getMany();
-
-        return tasks;
+    if (status) {
+      query.andWhere('task.status = :status', { status });
     }
 
-    async createTask(createTaskDto: CreateTaskDto): Promise<Task>{
-        const { title, description } = createTaskDto;
-
-        const task = this.create({
-        title,
-        description,
-        status: TaskStatus.OPEN,
-        });
-
-        await this.save(task);
-        return task;
+    if (search) {
+      query.andWhere(
+        '(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))',
+        { search: `%${search}%` },
+      );
     }
 
-    async deleteTask(id:string): Promise<void>{
-   
-        const result = await this.delete(id);
+    const tasks = await query.getMany();
 
-        if (result.affected === 0) {
-            throw new NotFoundException(`Task with ID ${id} not found`);
-        }
-        
+    return tasks;
+  }
 
+  async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
+    const { title, description } = createTaskDto;
+
+    const task = this.create({
+      title,
+      description,
+      status: TaskStatus.OPEN,
+      user,
+    });
+
+    await this.save(task);
+    return task;
+  }
+
+  async deleteTask(id: string): Promise<void> {
+    const result = await this.delete({id});
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
     }
+  }
 }
